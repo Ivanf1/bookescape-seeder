@@ -38,7 +38,7 @@ model club_libro {
   id              Int               @id @default(autoincrement())
   nome            String            @unique(map: "nome") @db.VarChar(255)
   data_creazione  DateTime          @db.Date
-  numero_iscritti Int?
+  numero_iscritti Int?              @default(0)
   amministrazione amministrazione[]
   evento          evento[]
   iscrizione      iscrizione[]
@@ -54,14 +54,13 @@ model composizione {
   @@index([id_libro], map: "id_libro")
 }
 
-model contenere {
-  tipo      Int
+model da_leggere {
   id_utente Int
   id_libro  String @db.Char(13)
-  libro     libro  @relation(fields: [id_libro], references: [isbn_13], onDelete: NoAction, onUpdate: NoAction, map: "contenere_ibfk_2")
-  lista     lista  @relation(fields: [tipo, id_utente], references: [tipo, id_utente], onDelete: NoAction, onUpdate: NoAction, map: "contenere_ibfk_1")
+  libro     libro  @relation(fields: [id_libro], references: [isbn_13], onDelete: NoAction, onUpdate: NoAction, map: "da_leggere_ibfk_2")
+  utente    utente @relation(fields: [id_utente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "da_leggere_ibfk_1")
 
-  @@id([tipo, id_utente, id_libro])
+  @@id([id_utente, id_libro])
   @@index([id_libro], map: "id_libro")
 }
 
@@ -80,8 +79,8 @@ model evento {
   piattaforma    String?          @db.VarChar(255)
   url_e          String?          @db.VarChar(255)
   poster         String?          @db.VarChar(255)
-  id_club_libro  Int?
-  club_libro     club_libro?      @relation(fields: [id_club_libro], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "evento_ibfk_1")
+  id_club_libro  Int
+  club_libro     club_libro       @relation(fields: [id_club_libro], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "evento_ibfk_1")
   partecipazione partecipazione[]
   svolgimento    svolgimento[]
   tema           tema[]
@@ -105,10 +104,21 @@ model iscrizione {
   @@index([id_club], map: "id_club")
 }
 
+model letto {
+  id_utente Int
+  id_libro  String @db.Char(13)
+  libro     libro  @relation(fields: [id_libro], references: [isbn_13], onDelete: NoAction, onUpdate: NoAction, map: "letto_ibfk_2")
+  utente    utente @relation(fields: [id_utente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "letto_ibfk_1")
+
+  @@id([id_utente, id_libro])
+  @@index([id_libro], map: "id_libro")
+}
+
 model libreria {
   id          Int           @id @default(autoincrement())
   citta       String        @db.VarChar(255)
   via         String        @db.VarChar(255)
+  civico      Int
   svolgimento svolgimento[]
 }
 
@@ -117,24 +127,16 @@ model libro {
   titolo        String          @db.VarChar(255)
   descrizione   String          @db.Text
   data_pub      DateTime        @db.Date
-  img           String?         @db.VarChar(255)
-  media_voti    Int?
+  img           String          @db.VarChar(255)
+  numero_voti   Int?            @default(0)
+  totale_voti   Int?            @default(0)
   appartenenza  appartenenza[]
   composizione  composizione[]
-  contenere     contenere[]
+  da_leggere    da_leggere[]
+  letto         letto[]
   pubblicazione pubblicazione[]
   tema          tema[]
   votazione     votazione[]
-}
-
-model lista {
-  tipo      Int
-  id_utente Int
-  utente    utente      @relation(fields: [id_utente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "lista_ibfk_1")
-  contenere contenere[]
-
-  @@id([tipo, id_utente])
-  @@index([id_utente], map: "id_utente")
 }
 
 model partecipazione {
@@ -196,8 +198,9 @@ model utente {
   cognome                                   String            @db.VarChar(255)
   data_reg                                  DateTime          @db.Date
   amministrazione                           amministrazione[]
+  da_leggere                                da_leggere[]
   iscrizione                                iscrizione[]
-  lista                                     lista[]
+  letto                                     letto[]
   partecipazione                            partecipazione[]
   seguire_seguire_id_utente_segueToutente   seguire[]         @relation("seguire_id_utente_segueToutente")
   seguire_seguire_id_utente_seguitoToutente seguire[]         @relation("seguire_id_utente_seguitoToutente")
@@ -207,6 +210,7 @@ model utente {
 model votazione {
   id_libro  String @db.Char(13)
   id_utente Int
+  voto      Int
   libro     libro  @relation(fields: [id_libro], references: [isbn_13], onDelete: NoAction, onUpdate: NoAction, map: "votazione_ibfk_1")
   utente    utente @relation(fields: [id_utente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "votazione_ibfk_2")
 
