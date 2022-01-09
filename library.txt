@@ -1,0 +1,10 @@
+Funo,Via Vicenza,75
+Marsala,Via del Pontiere,39
+Moscazzano,Via Giovanni Amendola,59
+Ospedaletto,Stradone Antonio Provolo,117
+La Corte,Via Carlo Cattaneo,138
+Castelluccio Valmaggiore,Via Nuova Agnano,18
+Rifredo,Piazza Principe Umberto,8
+Cogozzo,Largo Febo,147
+Bormio,Via Leopardi,89
+Gassano,Via Santa Maria di Costantinopoli,35
