@@ -1,9 +1,8 @@
 import getRandomInt from "../utils/randomInt";
 import crypto from "crypto";
-import loadNames from "../loaders/nameLoader";
-import loadSurnames from "../loaders/surnameLoader";
 import { Prisma } from "@prisma/client";
 import prisma from "../db/db";
+import load from "../loader/loader";
 
 const emailDomains = ["gmail.com", "hotmail.it", "outlook.com", "proton.com"];
 
@@ -42,9 +41,9 @@ const getIds = async (): Promise<number[]> => {
   return ids;
 };
 
-const seedUsers = async () => {
-  const names = loadNames();
-  const surnames = loadSurnames();
+const seedUsers = async (fileNameNames: string, fileNameSurnames: string) => {
+  const names = load(fileNameNames);
+  const surnames = load(fileNameSurnames);
 
   console.log("User: seeding start");
 

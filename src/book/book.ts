@@ -5,7 +5,7 @@ import Author from "../author/author";
 import Publisher from "../publisher/publisher";
 import Genre from "../genre/genre";
 import getBookImagePath from "../utils/bookImagePath";
-import loadUrls from "../loaders/urlLoader";
+import load from "../loader/loader";
 
 const addBook = async (
   isbn13: string,
@@ -115,8 +115,8 @@ const getIds = async (): Promise<string[]> => {
   return ids;
 };
 
-const seedBooks = async () => {
-  const urls = loadUrls();
+const seedBooks = async (fileName: string) => {
+  const urls = load(fileName);
   console.log("Book: Puppeteer: starting browser");
   const browser = await puppeteer.launch();
   console.log("Book: Puppeteer: browser started");

@@ -1,11 +1,11 @@
 import fs from "fs";
 import path from "path";
 
-const loadBookClubNames = (): Array<string> => {
+const load = (fileName: string): Array<string> => {
   let data: Array<string> = [];
 
   try {
-    const buffer = fs.readFileSync(path.join(__dirname, "../../book_club.txt"), "utf8");
+    const buffer = fs.readFileSync(path.join(__dirname, `../../${fileName}.txt`), "utf8");
     data = buffer.split("\n").map((url) => url.trim());
   } catch (err) {
     console.error(err);
@@ -14,4 +14,4 @@ const loadBookClubNames = (): Array<string> => {
   return data;
 };
 
-export default loadBookClubNames;
+export default load;

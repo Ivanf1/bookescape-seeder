@@ -14,11 +14,11 @@ import Amministrazione from "./amministrazione/amministrazione";
 import Svolgimento from "./svolgimento/svolgimento";
 
 const main = async () => {
-  await Book.seedBooks();
-  await User.seedUsers();
-  await BookClub.seedClubs();
+  await Book.seedBooks("urls");
+  await User.seedUsers("user_names", "user_surnames");
+  await BookClub.seedClubs("book_club");
   await Event.seedEvents(); // this needs to happen before library
-  await Library.seedLibraries();
+  await Library.seedLibraries("library");
   await Votazione.seedVotazioni();
   await Seguire.seedSeguire();
   await Letto.seedLetto();

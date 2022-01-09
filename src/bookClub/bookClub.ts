@@ -1,7 +1,7 @@
 import getRandomInt from "../utils/randomInt";
-import loadBookClubNames from "../loaders/bookClubNameLoader";
 import { Prisma } from "@prisma/client";
 import prisma from "../db/db";
+import load from "../loader/loader";
 
 const makeClub = (name: string): Prisma.club_libroCreateInput => {
   const day = getRandomInt(1, 26);
@@ -21,8 +21,8 @@ const addClub = async (club: Prisma.club_libroCreateInput) => {
   await prisma.club_libro.create({ data: club });
 };
 
-const seedClubs = async () => {
-  const names = loadBookClubNames();
+const seedClubs = async (fileName: string) => {
+  const names = load(fileName);
 
   console.log("BookClub: seeding start");
   for (let i = 0; i < names.length; i++) {

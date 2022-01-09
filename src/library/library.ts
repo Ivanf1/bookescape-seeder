@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import event from "../event/event";
 import prisma from "../db/db";
-import loadLibraries from "../loaders/libraryLoader";
+import load from "../loader/loader";
 
 const makeLibrary = (address: string): Prisma.libreriaCreateInput => {
   const [citta, via, civico] = address.split(",");
@@ -17,8 +17,8 @@ const addLibrary = async (library: Prisma.libreriaCreateInput) => {
   await prisma.libreria.create({ data: library });
 };
 
-const seedLibraries = async () => {
-  const names = loadLibraries();
+const seedLibraries = async (fileName: string) => {
+  const names = load(fileName);
   const inPersonEventIds = await event.getInPersonEventIds();
 
   console.log("Library: seeding start");
