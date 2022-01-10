@@ -31,6 +31,15 @@ const seedIscrizione = async () => {
       userIdsSupport.splice(randomIdx, 1);
       await addIscrizione(iscrizione);
     }
+
+    await prisma.club_libro.update({
+      data: {
+        numero_iscritti: randomNumOfIscrizione,
+      },
+      where: {
+        id: clubIds[i],
+      },
+    });
   }
 
   console.log("Iscrizione: seeding done");
