@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import event from "../event/event";
+import inPersonEvent from "../event/inPerson";
 import prisma from "../db/db";
 import getRandomInt from "../utils/randomInt";
 import library from "../library/library";
@@ -20,7 +20,7 @@ const addSvolgimento = async (svolgimento: Prisma.svolgimentoUncheckedCreateInpu
 
 const seedSvolgimento = async () => {
   console.log("Svolgimento: seeding start");
-  const eventIds = await event.getInPersonEventIds();
+  const eventIds = await inPersonEvent.getEventIds();
   const libraryIds = await library.getIds();
 
   // make a svolgimento for every library

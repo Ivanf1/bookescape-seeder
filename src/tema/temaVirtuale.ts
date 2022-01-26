@@ -2,23 +2,31 @@ import { Prisma } from "@prisma/client";
 import book from "../book/book";
 import prisma from "../db/db";
 import getRandomInt from "../utils/randomInt";
-import event from "../event/event";
+import virtualEvent from "../event/virtual";
 
-const makeTema = (eventId: number, bookIsbn: string): Prisma.temaUncheckedCreateInput => {
+const makeTema = (eventId: number, bookIsbn: string): Prisma.tema_virtualeCreateInput => {
   return {
-    id_libro: bookIsbn,
-    id_evento: eventId,
+    evento_virtuale: {
+      connect: {
+        id: eventId,
+      },
+    },
+    libro: {
+      connect: {
+        isbn_13: bookIsbn,
+      },
+    },
   };
 };
 
-const addTema = async (letto: Prisma.temaUncheckedCreateInput) => {
-  await prisma.tema.create({ data: letto });
+const addTema = async (letto: Prisma.tema_virtualeCreateInput) => {
+  await prisma.tema_virtuale.create({ data: letto });
 };
 
 const seedTema = async () => {
-  console.log("Tema: seeding start");
+  console.log("Tema Virtuale: seeding start");
   const bookIsbn = await book.getIds();
-  const eventIds = await event.getIds();
+  const eventIds = await virtualEvent.getIds();
 
   // for every event associate between 1 and 2 books
   for (let i = 0; i < eventIds.length; i++) {
@@ -33,7 +41,7 @@ const seedTema = async () => {
     }
   }
 
-  console.log("Tema: seeding done");
+  console.log("Tema Virtuale: seeding done");
 };
 
 export default {

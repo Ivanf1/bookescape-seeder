@@ -1,27 +1,35 @@
 import { Prisma } from "@prisma/client";
 import prisma from "../db/db";
 import getRandomInt from "../utils/randomInt";
-import event from "../event/event";
+import virtualEvent from "../event/virtual";
 import user from "../user/user";
 
 const makePartecipazione = (
   eventId: number,
   userId: number
-): Prisma.partecipazioneUncheckedCreateInput => {
+): Prisma.partecipazione_virtualeCreateInput => {
   return {
-    id_evento: eventId,
-    id_utente: userId,
+    evento_virtuale: {
+      connect: {
+        id: eventId,
+      },
+    },
+    utente: {
+      connect: {
+        id: userId,
+      },
+    },
   };
 };
 
-const addPartecipazione = async (partecipazione: Prisma.partecipazioneUncheckedCreateInput) => {
-  await prisma.partecipazione.create({ data: partecipazione });
+const addPartecipazione = async (partecipazione: Prisma.partecipazione_virtualeCreateInput) => {
+  await prisma.partecipazione_virtuale.create({ data: partecipazione });
 };
 
 const seedPartecipazione = async () => {
-  console.log("Partecipazione: seeding start");
+  console.log("Partecipazione Virtuale: seeding start");
   const userIds = await user.getIds();
-  const eventIds = await event.getIds();
+  const eventIds = await virtualEvent.getIds();
 
   // for every event associate a random number of user
   for (let i = 0; i < eventIds.length; i++) {
@@ -36,7 +44,7 @@ const seedPartecipazione = async () => {
     }
   }
 
-  console.log("Partecipazione: seeding done");
+  console.log("Partecipazione Virtuale: seeding done");
 };
 
 export default {

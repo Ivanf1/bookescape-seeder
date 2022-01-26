@@ -7,16 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model amministrazione {
-  id_utente  Int
-  id_club    Int
-  club_libro club_libro @relation(fields: [id_club], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "amministrazione_ibfk_2")
-  utente     utente     @relation(fields: [id_utente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "amministrazione_ibfk_1")
-
-  @@id([id_utente, id_club])
-  @@index([id_club], map: "id_club")
-}
-
 model appartenenza {
   id_libro  String @db.Char(13)
   id_genere Int
@@ -35,13 +25,17 @@ model autore {
 }
 
 model club_libro {
-  id              Int               @id @default(autoincrement())
-  nome            String            @unique(map: "nome") @db.VarChar(255)
-  data_creazione  DateTime          @db.Date
-  numero_iscritti Int?              @default(0)
-  amministrazione amministrazione[]
-  evento          evento[]
-  iscrizione      iscrizione[]
+  id                Int                 @id @default(autoincrement())
+  nome              String              @unique(map: "nome") @db.VarChar(255)
+  data_creazione    DateTime            @db.Date
+  numero_iscritti   Int?                @default(0)
+  id_amministratore Int
+  utente            utente              @relation(fields: [id_amministratore], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "club_libro_ibfk_1")
+  evento_in_persona evento_in_persona[]
+  evento_virtuale   evento_virtuale[]
+  iscrizione        iscrizione[]
+
+  @@index([id_amministratore], map: "id_amministratore")
 }
 
 model composizione {
@@ -70,20 +64,34 @@ model editore {
   pubblicazione pubblicazione[]
 }
 
-model evento {
-  id             Int              @id @default(autoincrement())
-  nome           String           @db.VarChar(255)
-  descrizione    String           @db.VarChar(255)
-  data_fine      DateTime         @db.Date
-  data_inizio    DateTime         @db.Date
-  piattaforma    String?          @db.VarChar(255)
-  url_e          String?          @db.VarChar(255)
-  poster         String?          @db.VarChar(255)
-  id_club_libro  Int
-  club_libro     club_libro       @relation(fields: [id_club_libro], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "evento_ibfk_1")
-  partecipazione partecipazione[]
-  svolgimento    svolgimento[]
-  tema           tema[]
+model evento_in_persona {
+  id                        Int                         @id @default(autoincrement())
+  nome                      String                      @db.VarChar(255)
+  descrizione               String                      @db.VarChar(255)
+  data_fine                 DateTime                    @db.Date
+  data_inizio               DateTime                    @db.Date
+  poster                    String?                     @db.VarChar(255)
+  id_club_libro             Int
+  club_libro                club_libro                  @relation(fields: [id_club_libro], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "evento_in_persona_ibfk_1")
+  partecipazione_in_persona partecipazione_in_persona[]
+  svolgimento               svolgimento[]
+  tema_in_persona           tema_in_persona[]
+
+  @@index([id_club_libro], map: "id_club_libro")
+}
+
+model evento_virtuale {
+  id                      Int                       @id @default(autoincrement())
+  nome                    String                    @db.VarChar(255)
+  descrizione             String                    @db.VarChar(255)
+  data_fine               DateTime                  @db.Date
+  data_inizio             DateTime                  @db.Date
+  piattaforma             String?                   @db.VarChar(255)
+  url_e                   String?                   @db.VarChar(255)
+  id_club_libro           Int
+  club_libro              club_libro                @relation(fields: [id_club_libro], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "evento_virtuale_ibfk_1")
+  partecipazione_virtuale partecipazione_virtuale[]
+  tema_virtuale           tema_virtuale[]
 
   @@index([id_club_libro], map: "id_club_libro")
 }
@@ -123,27 +131,38 @@ model libreria {
 }
 
 model libro {
-  isbn_13       String          @id @db.Char(13)
-  titolo        String          @db.VarChar(255)
-  descrizione   String          @db.Text
-  data_pub      DateTime        @db.Date
-  img           String          @db.VarChar(255)
-  numero_voti   Int?            @default(0)
-  totale_voti   Int?            @default(0)
-  appartenenza  appartenenza[]
-  composizione  composizione[]
-  da_leggere    da_leggere[]
-  letto         letto[]
-  pubblicazione pubblicazione[]
-  tema          tema[]
-  votazione     votazione[]
+  isbn_13         String            @id @db.Char(13)
+  titolo          String            @db.VarChar(255)
+  descrizione     String            @db.Text
+  data_pub        DateTime          @db.Date
+  img             String            @db.VarChar(255)
+  numero_voti     Int?              @default(0)
+  totale_voti     Int?              @default(0)
+  appartenenza    appartenenza[]
+  composizione    composizione[]
+  da_leggere      da_leggere[]
+  letto           letto[]
+  pubblicazione   pubblicazione[]
+  tema_in_persona tema_in_persona[]
+  tema_virtuale   tema_virtuale[]
+  votazione       votazione[]
 }
 
-model partecipazione {
-  id_utente Int
-  id_evento Int
-  evento    evento @relation(fields: [id_evento], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "partecipazione_ibfk_2")
-  utente    utente @relation(fields: [id_utente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "partecipazione_ibfk_1")
+model partecipazione_in_persona {
+  id_utente         Int
+  id_evento         Int
+  evento_in_persona evento_in_persona @relation(fields: [id_evento], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "partecipazione_in_persona_ibfk_2")
+  utente            utente            @relation(fields: [id_utente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "partecipazione_in_persona_ibfk_1")
+
+  @@id([id_utente, id_evento])
+  @@index([id_evento], map: "id_evento")
+}
+
+model partecipazione_virtuale {
+  id_utente       Int
+  id_evento       Int
+  evento_virtuale evento_virtuale @relation(fields: [id_evento], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "partecipazione_virtuale_ibfk_2")
+  utente          utente          @relation(fields: [id_utente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "partecipazione_virtuale_ibfk_1")
 
   @@id([id_utente, id_evento])
   @@index([id_evento], map: "id_evento")
@@ -170,40 +189,51 @@ model seguire {
 }
 
 model svolgimento {
-  id_evento   Int
-  id_libreria Int
-  evento      evento   @relation(fields: [id_evento], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "svolgimento_ibfk_1")
-  libreria    libreria @relation(fields: [id_libreria], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "svolgimento_ibfk_2")
+  id_evento         Int
+  id_libreria       Int
+  evento_in_persona evento_in_persona @relation(fields: [id_evento], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "svolgimento_ibfk_1")
+  libreria          libreria          @relation(fields: [id_libreria], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "svolgimento_ibfk_2")
 
   @@id([id_evento, id_libreria])
   @@index([id_libreria], map: "id_libreria")
 }
 
-model tema {
-  id_libro  String @db.Char(13)
-  id_evento Int
-  evento    evento @relation(fields: [id_evento], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tema_ibfk_2")
-  libro     libro  @relation(fields: [id_libro], references: [isbn_13], onDelete: NoAction, onUpdate: NoAction, map: "tema_ibfk_1")
+model tema_in_persona {
+  id_libro          String            @db.Char(13)
+  id_evento         Int
+  evento_in_persona evento_in_persona @relation(fields: [id_evento], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tema_in_persona_ibfk_2")
+  libro             libro             @relation(fields: [id_libro], references: [isbn_13], onDelete: NoAction, onUpdate: NoAction, map: "tema_in_persona_ibfk_1")
+
+  @@id([id_libro, id_evento])
+  @@index([id_evento], map: "id_evento")
+}
+
+model tema_virtuale {
+  id_libro        String          @db.Char(13)
+  id_evento       Int
+  evento_virtuale evento_virtuale @relation(fields: [id_evento], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tema_virtuale_ibfk_2")
+  libro           libro           @relation(fields: [id_libro], references: [isbn_13], onDelete: NoAction, onUpdate: NoAction, map: "tema_virtuale_ibfk_1")
 
   @@id([id_libro, id_evento])
   @@index([id_evento], map: "id_evento")
 }
 
 model utente {
-  id                                        Int               @id @default(autoincrement())
-  username                                  String            @unique(map: "username") @db.VarChar(255)
-  email                                     String            @unique(map: "email") @db.VarChar(255)
-  passwd                                    String            @db.VarChar(255)
-  nome                                      String            @db.VarChar(255)
-  cognome                                   String            @db.VarChar(255)
-  data_reg                                  DateTime          @db.Date
-  amministrazione                           amministrazione[]
+  id                                        Int                         @id @default(autoincrement())
+  username                                  String                      @unique(map: "username") @db.VarChar(255)
+  email                                     String                      @unique(map: "email") @db.VarChar(255)
+  passwd                                    String                      @db.VarChar(255)
+  nome                                      String                      @db.VarChar(255)
+  cognome                                   String                      @db.VarChar(255)
+  data_reg                                  DateTime                    @db.Date
+  club_libro                                club_libro[]
   da_leggere                                da_leggere[]
   iscrizione                                iscrizione[]
   letto                                     letto[]
-  partecipazione                            partecipazione[]
-  seguire_seguire_id_utente_segueToutente   seguire[]         @relation("seguire_id_utente_segueToutente")
-  seguire_seguire_id_utente_seguitoToutente seguire[]         @relation("seguire_id_utente_seguitoToutente")
+  partecipazione_in_persona                 partecipazione_in_persona[]
+  partecipazione_virtuale                   partecipazione_virtuale[]
+  seguire_seguire_id_utente_segueToutente   seguire[]                   @relation("seguire_id_utente_segueToutente")
+  seguire_seguire_id_utente_seguitoToutente seguire[]                   @relation("seguire_id_utente_seguitoToutente")
   votazione                                 votazione[]
 }
 
