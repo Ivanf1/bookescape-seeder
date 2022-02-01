@@ -4,28 +4,39 @@ import user from "../user/user";
 import prisma from "../../db/db";
 import getRandomInt from "../../utils/randomInt";
 
-const makeVotazione = (userId: number, bookIsbn: string): Prisma.votazioneUncheckedCreateInput => {
-  const voto = getRandomInt(1, 5);
+const makeSegnare = (userId: number, bookIsbn: string): Prisma.segnareCreateInput => {
+  const stato = getRandomInt(0, 2);
 
   return {
-    id_libro: bookIsbn,
-    id_utente: userId,
-    voto,
+    libro: {
+      connect: {
+        isbn_13: bookIsbn,
+      },
+    },
+    utente: {
+      connect: {
+        id: userId,
+      },
+    },
+    stato,
+    // stato = 0 -> book read
+    // if user has not read book, no vote can be assigned
+    voto: stato == 0 ? getRandomInt(1, 5) : null,
   };
 };
 
-const addVotazione = async (votazione: Prisma.votazioneUncheckedCreateInput): Promise<number> => {
-  await prisma.votazione.create({ data: votazione });
-  return votazione.voto;
+const addSegnare = async (segnare: Prisma.segnareCreateInput): Promise<number> => {
+  await prisma.segnare.create({ data: segnare });
+  return segnare.voto ? segnare.voto : 0;
 };
 
-const seedVotazioni = async () => {
-  console.log("Votazione: seeding start");
+const seedSegnare = async () => {
+  console.log("Segnare: seeding start");
   const bookIsbn = await book.getIds();
   const userIds = await user.getIds();
 
   const randomBookStop = getRandomInt(bookIsbn.length / 2, bookIsbn.length);
-  // make a random number of votazione for a random num of book
+  // make a random number of segnare for a random num of book
   for (let i = 0; i < randomBookStop; i++) {
     const randomNumOfVotazione = getRandomInt(1, userIds.length / 2);
     // make a copy of the array
@@ -34,9 +45,9 @@ const seedVotazioni = async () => {
     for (let j = 0; j < randomNumOfVotazione; j++) {
       // randomly connect a user with a book
       const randomIdx = getRandomInt(0, userIdsSupport.length - 1);
-      const votazione = makeVotazione(userIdsSupport[randomIdx], bookIsbn[i]);
+      const segnare = makeSegnare(userIdsSupport[randomIdx], bookIsbn[i]);
       userIdsSupport.splice(randomIdx, 1);
-      sumVotazioni += await addVotazione(votazione);
+      sumVotazioni += await addSegnare(segnare);
     }
 
     // update libro stats
@@ -46,11 +57,11 @@ const seedVotazioni = async () => {
     });
   }
 
-  console.log("Votazione: seeding done");
+  console.log("Segnare: seeding done");
 };
 
 export default {
-  makeVotazione,
-  addVotazione,
-  seedVotazioni,
+  makeSegnare,
+  addSegnare,
+  seedSegnare,
 };

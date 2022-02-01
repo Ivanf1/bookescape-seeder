@@ -4,7 +4,7 @@ import prisma from "../../db/db";
 import load from "../../loader/loader";
 import user from "../user/user";
 
-const makeClub = (name: string, adminId: number): Prisma.club_libroCreateInput => {
+const makeClub = (name: string): Prisma.club_libroCreateInput => {
   const day = getRandomInt(1, 26);
   const month = getRandomInt(0, 11);
   const year = getRandomInt(1980, 2016);
@@ -15,11 +15,6 @@ const makeClub = (name: string, adminId: number): Prisma.club_libroCreateInput =
     nome: name,
     data_creazione: date,
     numero_iscritti: 0,
-    utente: {
-      connect: {
-        id: adminId,
-      },
-    },
   };
 };
 
@@ -35,7 +30,7 @@ const seedClubs = async (fileName: string) => {
   for (let i = 0; i < names.length; i++) {
     let userIdsSupport = userIds.slice();
     const randomIdx = getRandomInt(0, userIdsSupport.length - 1);
-    const club = makeClub(names[i], userIdsSupport[randomIdx]);
+    const club = makeClub(names[i]);
 
     userIdsSupport.splice(randomIdx, 1);
     await addClub(club);

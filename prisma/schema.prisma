@@ -29,13 +29,21 @@ model club_libro {
   nome              String              @unique(map: "nome") @db.VarChar(255)
   data_creazione    DateTime            @db.Date
   numero_iscritti   Int?                @default(0)
-  id_amministratore Int
-  utente            utente              @relation(fields: [id_amministratore], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "club_libro_ibfk_1")
   evento_in_persona evento_in_persona[]
   evento_virtuale   evento_virtuale[]
   iscrizione        iscrizione[]
+}
 
-  @@index([id_amministratore], map: "id_amministratore")
+model commento {
+  id_utente Int
+  id_libro  String   @db.Char(13)
+  data_pub  DateTime @db.Timestamp(0)
+  testo     String   @db.Text
+  libro     libro    @relation(fields: [id_libro], references: [isbn_13], onDelete: NoAction, onUpdate: NoAction, map: "commento_ibfk_2")
+  utente    utente   @relation(fields: [id_utente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "commento_ibfk_1")
+
+  @@id([id_utente, id_libro, data_pub])
+  @@index([id_libro], map: "id_libro")
 }
 
 model composizione {
@@ -45,16 +53,6 @@ model composizione {
   libro     libro  @relation(fields: [id_libro], references: [isbn_13], onDelete: NoAction, onUpdate: NoAction, map: "composizione_ibfk_2")
 
   @@id([id_autore, id_libro])
-  @@index([id_libro], map: "id_libro")
-}
-
-model da_leggere {
-  id_utente Int
-  id_libro  String @db.Char(13)
-  libro     libro  @relation(fields: [id_libro], references: [isbn_13], onDelete: NoAction, onUpdate: NoAction, map: "da_leggere_ibfk_2")
-  utente    utente @relation(fields: [id_utente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "da_leggere_ibfk_1")
-
-  @@id([id_utente, id_libro])
   @@index([id_libro], map: "id_libro")
 }
 
@@ -112,16 +110,6 @@ model iscrizione {
   @@index([id_club], map: "id_club")
 }
 
-model letto {
-  id_utente Int
-  id_libro  String @db.Char(13)
-  libro     libro  @relation(fields: [id_libro], references: [isbn_13], onDelete: NoAction, onUpdate: NoAction, map: "letto_ibfk_2")
-  utente    utente @relation(fields: [id_utente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "letto_ibfk_1")
-
-  @@id([id_utente, id_libro])
-  @@index([id_libro], map: "id_libro")
-}
-
 model libreria {
   id          Int           @id @default(autoincrement())
   citta       String        @db.VarChar(255)
@@ -139,13 +127,12 @@ model libro {
   numero_voti     Int?              @default(0)
   totale_voti     Int?              @default(0)
   appartenenza    appartenenza[]
+  commento        commento[]
   composizione    composizione[]
-  da_leggere      da_leggere[]
-  letto           letto[]
   pubblicazione   pubblicazione[]
+  segnare         segnare[]
   tema_in_persona tema_in_persona[]
   tema_virtuale   tema_virtuale[]
-  votazione       votazione[]
 }
 
 model partecipazione_in_persona {
@@ -175,6 +162,18 @@ model pubblicazione {
   libro      libro   @relation(fields: [id_libro], references: [isbn_13], onDelete: NoAction, onUpdate: NoAction, map: "pubblicazione_ibfk_2")
 
   @@id([id_editore, id_libro])
+  @@index([id_libro], map: "id_libro")
+}
+
+model segnare {
+  id_libro  String @db.Char(13)
+  id_utente Int
+  voto      Int?   @db.SmallInt
+  stato     Int    @db.SmallInt
+  libro     libro  @relation(fields: [id_libro], references: [isbn_13], onDelete: NoAction, onUpdate: NoAction, map: "segnare_ibfk_1")
+  utente    utente @relation(fields: [id_utente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "segnare_ibfk_2")
+
+  @@id([id_utente, id_libro])
   @@index([id_libro], map: "id_libro")
 }
 
@@ -226,24 +225,11 @@ model utente {
   nome                                      String                      @db.VarChar(255)
   cognome                                   String                      @db.VarChar(255)
   data_reg                                  DateTime                    @db.Date
-  club_libro                                club_libro[]
-  da_leggere                                da_leggere[]
+  commento                                  commento[]
   iscrizione                                iscrizione[]
-  letto                                     letto[]
   partecipazione_in_persona                 partecipazione_in_persona[]
   partecipazione_virtuale                   partecipazione_virtuale[]
+  segnare                                   segnare[]
   seguire_seguire_id_utente_segueToutente   seguire[]                   @relation("seguire_id_utente_segueToutente")
   seguire_seguire_id_utente_seguitoToutente seguire[]                   @relation("seguire_id_utente_seguitoToutente")
-  votazione                                 votazione[]
-}
-
-model votazione {
-  id_libro  String @db.Char(13)
-  id_utente Int
-  voto      Int
-  libro     libro  @relation(fields: [id_libro], references: [isbn_13], onDelete: NoAction, onUpdate: NoAction, map: "votazione_ibfk_1")
-  utente    utente @relation(fields: [id_utente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "votazione_ibfk_2")
-
-  @@id([id_utente, id_libro])
-  @@index([id_libro], map: "id_libro")
 }
