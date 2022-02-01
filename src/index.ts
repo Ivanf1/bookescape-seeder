@@ -15,7 +15,7 @@ import Svolgimento from "./tables/svolgimento/svolgimento";
 import Commento from "./tables/commento/commento";
 
 const main = async () => {
-  await Book.seedBooks("seed/urls");
+  await Book.seedBooks("seed/urls", "seed/books");
   await User.seedUsers("seed/user_names", "seed/user_surnames");
   await BookClub.seedClubs("seed/book_club");
   await VirtualEvent.seedEvents();

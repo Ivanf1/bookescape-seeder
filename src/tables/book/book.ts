@@ -6,32 +6,46 @@ import Publisher from "../publisher/publisher";
 import Genre from "../genre/genre";
 import getBookImagePath from "../../utils/bookImagePath";
 import load from "../../loader/loader";
+import { writeJson, readJson } from "../../loader/bookLoader";
 
-const addBook = async (
-  isbn13: string,
-  titolo: string,
-  descrizione: string,
-  dataPpub: Date,
-  img: string,
-  publisherId: number,
-  authorId: number,
-  genreId: number
-) => {
+interface Book {
+  isbn13: string;
+  titolo: string;
+  descrizione: string;
+  dataPpub: Date;
+  img: string;
+  publisher: string;
+  authorName: string;
+  authorSurname: string;
+  genre: string;
+  publisherId: number;
+  authorId: number;
+  genreId: number;
+}
+
+const addBookWithConnections = async (book: Book) => {
+  await Author.addAuthor(book.authorName, book.authorSurname);
+  await Genre.addGenre(book.genre);
+  await Publisher.addPublisher(book.publisher);
+  await addBook(book);
+};
+
+const addBook = async (book: Book) => {
   await prisma.libro.create({
     data: {
-      isbn_13: isbn13,
-      titolo: titolo,
-      descrizione: descrizione,
-      data_pub: dataPpub,
-      img: img,
-      appartenenza: { create: { id_genere: genreId } },
-      composizione: { create: { id_autore: authorId } },
-      pubblicazione: { create: { id_editore: publisherId } },
+      isbn_13: book.isbn13,
+      titolo: book.titolo,
+      descrizione: book.descrizione,
+      data_pub: book.dataPpub,
+      img: book.img,
+      appartenenza: { create: { id_genere: book.genreId } },
+      composizione: { create: { id_autore: book.authorId } },
+      pubblicazione: { create: { id_editore: book.publisherId } },
     },
   });
 };
 
-const storeBook = async (url: string, page: puppeteer.Page) => {
+const storeBook = async (url: string, page: puppeteer.Page): Promise<Book | null> => {
   console.log(`getting: ${url}`);
   const data = await getBook(url, page);
 
@@ -43,22 +57,30 @@ const storeBook = async (url: string, page: puppeteer.Page) => {
   let authorId = await Author.addAuthor(name.trim(), surname.trim());
   let genreId = await Genre.addGenre(data.genre.trim());
   let publisherId = await Publisher.addPublisher(data.editor.trim());
-  if (!publisherId || !authorId || !genreId) return;
+  if (!publisherId || !authorId || !genreId) return null;
 
   console.log(`inserting: ${url}`);
 
   const img = getBookImagePath(data.img.trim());
 
-  addBook(
-    data.isbn13.trim(),
-    data.bookTitle.trim(),
-    data.description.trim(),
-    validDate,
-    img.trim(),
-    publisherId,
-    authorId,
-    genreId
-  );
+  const book: Book = {
+    isbn13: data.isbn13.trim(),
+    titolo: data.bookTitle.trim(),
+    descrizione: data.description.trim(),
+    dataPpub: validDate,
+    img: img.trim(),
+    authorName: name.trim(),
+    authorSurname: surname.trim(),
+    publisher: data.editor.trim(),
+    genre: data.genre.trim(),
+    publisherId: publisherId,
+    authorId: authorId,
+    genreId: genreId,
+  };
+
+  addBook(book);
+
+  return book;
 };
 
 const getBook = async (url: string, page: puppeteer.Page) => {
@@ -115,7 +137,7 @@ const getIds = async (): Promise<string[]> => {
   return ids;
 };
 
-const seedBooks = async (fileName: string) => {
+const scrapeBooks = async (fileName: string): Promise<Book[]> => {
   const urls = load(fileName);
   console.log("Book: Puppeteer: starting browser");
   const browser = await puppeteer.launch();
@@ -124,16 +146,43 @@ const seedBooks = async (fileName: string) => {
   const page = await browser.newPage();
   console.log("Book: Puppeteer: page created");
 
-  console.log("Book: seeding start");
+  const books: Book[] = [];
   for (let i = 0; i < urls.length; i++) {
     console.log(`book n. ${i + 1}`);
-    await storeBook(urls[i], page);
+    const b = await storeBook(urls[i], page);
+    if (b) books.push(b);
   }
 
   await page.close();
   console.log("Book: Puppeteer: page closed");
   await browser.close();
   console.log("Book: Puppeteer: browser closed");
+
+  return books;
+};
+
+const persistBooks = async (books: Book[]) => {
+  for (let book of books) {
+    await addBookWithConnections(book);
+  }
+};
+
+const seedBooks = async (fileWithUrls: string, fileNameForJsonWrite: string) => {
+  console.log("Book: seeding start");
+  let data = <Book[]>readJson(fileNameForJsonWrite);
+  if (!data) {
+    console.log("Book: no file with books found");
+    console.log("Book: scraping start");
+    const books = await scrapeBooks(fileWithUrls);
+    console.log("Book: scraping end");
+    console.log("Book: writing file with books start");
+    writeJson(fileNameForJsonWrite, books);
+    console.log("Book: writing file with books done");
+  } else {
+    console.log("Book: file with books found");
+    console.log("Book: seeding from file");
+    await persistBooks(data);
+  }
   console.log("Book: seeding done");
 };
 

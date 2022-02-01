@@ -57,7 +57,8 @@ const seedCommento = async () => {
     let userIdsSupport = userIds.slice();
     for (let j = 0; j < randomNumOfCommento; j++) {
       // randomly connect a user with a book
-      const randomIdx = getRandomInt(0, userIdsSupport.length - 1);
+      // make user 1 have no comment
+      const randomIdx = getRandomInt(1, userIdsSupport.length - 1);
       const commento = makeCommento(userIdsSupport[randomIdx], bookIsbn[i]);
       userIdsSupport.splice(randomIdx, 1);
       await addCommento(commento);

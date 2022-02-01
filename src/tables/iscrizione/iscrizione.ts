@@ -22,11 +22,12 @@ const seedIscrizione = async () => {
 
   // for every club associate a random number of user
   for (let i = 0; i < clubIds.length; i++) {
-    const randomNumOfIscrizione = getRandomInt(1, userIds.length - 1);
+    const randomNumOfIscrizione = getRandomInt(1, userIds.length - 3);
     // make a copy of the array
     let userIdsSupport = userIds.slice();
     for (let j = 0; j < randomNumOfIscrizione; j++) {
-      const randomIdx = getRandomInt(0, userIdsSupport.length - 1);
+      // make user 1 and 2 have no iscrizione
+      const randomIdx = getRandomInt(2, userIdsSupport.length - 1);
       const iscrizione = makeIscrizione(clubIds[i], userIdsSupport[randomIdx]);
       userIdsSupport.splice(randomIdx, 1);
       await addIscrizione(iscrizione);

@@ -44,7 +44,8 @@ const seedSegnare = async () => {
     let sumVotazioni = 0;
     for (let j = 0; j < randomNumOfVotazione; j++) {
       // randomly connect a user with a book
-      const randomIdx = getRandomInt(0, userIdsSupport.length - 1);
+      // make user 1 and 2 have no segnare
+      const randomIdx = getRandomInt(2, userIdsSupport.length - 1);
       const segnare = makeSegnare(userIdsSupport[randomIdx], bookIsbn[i]);
       userIdsSupport.splice(randomIdx, 1);
       sumVotazioni += await addSegnare(segnare);
