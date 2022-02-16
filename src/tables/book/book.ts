@@ -38,9 +38,9 @@ const addBook = async (book: Book) => {
       descrizione: book.descrizione,
       data_pub: book.dataPpub,
       img: book.img,
+      id_editore: book.publisherId,
       appartenenza: { create: { id_genere: book.genreId } },
       composizione: { create: { id_autore: book.authorId } },
-      pubblicazione: { create: { id_editore: book.publisherId } },
     },
   });
 };

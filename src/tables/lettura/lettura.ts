@@ -4,7 +4,7 @@ import user from "../user/user";
 import prisma from "../../db/db";
 import getRandomInt from "../../utils/randomInt";
 
-const makeSegnare = (userId: number, bookIsbn: string): Prisma.segnareCreateInput => {
+const makeLettura = (userId: number, bookIsbn: string): Prisma.letturaCreateInput => {
   const stato = getRandomInt(0, 2);
 
   return {
@@ -25,13 +25,13 @@ const makeSegnare = (userId: number, bookIsbn: string): Prisma.segnareCreateInpu
   };
 };
 
-const addSegnare = async (segnare: Prisma.segnareCreateInput): Promise<number> => {
-  await prisma.segnare.create({ data: segnare });
+const addLettura = async (segnare: Prisma.letturaCreateInput): Promise<number> => {
+  await prisma.lettura.create({ data: segnare });
   return segnare.voto ? segnare.voto : 0;
 };
 
-const seedSegnare = async () => {
-  console.log("Segnare: seeding start");
+const seedLettura = async () => {
+  console.log("Lettura: seeding start");
   const bookIsbn = await book.getIds();
   const userIds = await user.getIds();
 
@@ -44,11 +44,10 @@ const seedSegnare = async () => {
     let sumVotazioni = 0;
     for (let j = 0; j < randomNumOfVotazione; j++) {
       // randomly connect a user with a book
-      // make user 1 and 2 have no segnare
-      const randomIdx = getRandomInt(2, userIdsSupport.length - 1);
-      const segnare = makeSegnare(userIdsSupport[randomIdx], bookIsbn[i]);
+      const randomIdx = getRandomInt(0, userIdsSupport.length - 1);
+      const segnare = makeLettura(userIdsSupport[randomIdx], bookIsbn[i]);
       userIdsSupport.splice(randomIdx, 1);
-      sumVotazioni += await addSegnare(segnare);
+      sumVotazioni += await addLettura(segnare);
     }
 
     // update libro stats
@@ -58,11 +57,11 @@ const seedSegnare = async () => {
     });
   }
 
-  console.log("Segnare: seeding done");
+  console.log("Lettura: seeding done");
 };
 
 export default {
-  makeSegnare,
-  addSegnare,
-  seedSegnare,
+  makeLettura,
+  addLettura,
+  seedLettura,
 };

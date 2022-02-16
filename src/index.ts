@@ -2,7 +2,6 @@ import BookClub from "./tables/bookClub/bookClub";
 import VirtualEvent from "./tables/event/virtual";
 import InPersonEvent from "./tables/event/inPerson";
 import Library from "./tables/library/library";
-import Segnare from "./tables/segnare/segnare";
 import User from "./tables/user/user";
 import Book from "./tables/book/book";
 import Seguire from "./tables/seguire/seguire";
@@ -13,6 +12,7 @@ import PartecipazioneInPerson from "./tables/partecipazione/partecipazioneInPers
 import Iscrizione from "./tables/iscrizione/iscrizione";
 import Svolgimento from "./tables/svolgimento/svolgimento";
 import Commento from "./tables/commento/commento";
+import lettura from "./tables/lettura/lettura";
 
 const main = async () => {
   await Book.seedBooks("seed/urls", "seed/books");
@@ -21,7 +21,7 @@ const main = async () => {
   await VirtualEvent.seedEvents();
   await InPersonEvent.seedEvents(); // this needs to happen before library
   await Library.seedLibraries("seed/library");
-  await Segnare.seedSegnare();
+  await lettura.seedLettura();
   await Seguire.seedSeguire();
   await TemaInPerson.seedTema();
   await TemaVirtual.seedTema();
